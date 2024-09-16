@@ -1,5 +1,5 @@
 from django import forms
-from .models import Comment, Post
+from .models import Comment, Post, User, Account
 
 
 class TicketForm(forms.Form):
@@ -40,9 +40,45 @@ class SearchForm(forms.Form):
 
 
 class PostForm(forms.ModelForm):
-    image1 = forms.ImageField(label="تصویر اول")
-    image2 = forms.ImageField(label="تصویر دوم")
+    image1 = forms.ImageField(label="تصویر اول", required=False)
+    image2 = forms.ImageField(label="تصویر دوم", required=False)
 
     class Meta:
         model = Post
-        fields = ('title', 'description', 'reading_time')
+        fields = ('title', 'description', 'reading_time', 'category')
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=150, required=True)
+    password = forms.CharField(max_length=150, required=True,
+                               widget=forms.PasswordInput)
+
+
+class UserRegisterForm(forms.ModelForm):
+    password1 = forms.CharField(max_length=20, label='Password',
+                                widget=forms.PasswordInput)
+    password2 = forms.CharField(max_length=20, label='Password confirm',
+                                widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+
+    def clean_password2(self):
+        cd = self.cleaned_data
+        if cd['password1'] != cd['password2']:
+            raise forms.ValidationError('پسوردها مطابقت ندارند!')
+        else:
+            return cd['password2']
+
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
+
+
+class AccountEditForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ('date_of_birth', 'bio', 'job', 'photo')

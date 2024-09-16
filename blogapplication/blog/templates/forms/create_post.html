@@ -4,6 +4,12 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
+        {% for img in post.images.all %}
+            <img width="300px" height="200px" src="{{ img.image_file.url }}" alt="{{ img.title }}">
+            <a href="{% url 'blog:delete_image' img.id %}">حذف تصویر</a>
+        {% endfor %}
+        <br>
+        <br>
         <input type="submit" value="Post">
     </form>
     {% if form.errors %}

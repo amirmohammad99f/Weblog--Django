@@ -1,8 +1,8 @@
 {% extends 'parent/base.html' %}
 {% block title %}post list{% endblock %}
 {% block content %}
-    <h1>post list</h1>
-    <ol style="--length: {{ posts|length }}" role="list">
+    <h1 style="text-align: center">post list</h1>
+    <ol style="text-align: center; --length: {{ posts|length }}" role="list">
         {% for post in posts %}
             <li style="--i: {{ forloop.counter }}">
                 <h3>

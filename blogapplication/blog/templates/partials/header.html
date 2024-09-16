@@ -1,7 +1,18 @@
-<form method="get" action="{% url 'blog:post_search' %}">
+<form method="get" action="{% url 'blog:post_search' %}" style="text-align: center">
     {% csrf_token %}
     <input type="text" name="query" required placeholder="کلمه موردنظر را وارد کنید...">
     <input type="submit" value="جستجو">
 </form>
+
+{% if request.user.is_authenticated %}
+    <div>
+        <a href="#">{{ request.user.first_name|default:request.user.username }}</a>
+    </div>
+{% else %}
+    <div>
+        <a href="{% url 'blog:login' %}">ورود</a>
+        <a href="{% url 'blog:register' %}">ثبت نام</a>
+    </div>
+{% endif %}
 
 <p><a href="{% url 'blog:profile' %}">پروفایل</a></p>

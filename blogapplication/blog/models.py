@@ -20,6 +20,14 @@ class Post(models.Model):
         PUBLISHED = "PB", "Published"
         REJECTED = "RJ", "Rejected"
 
+    CategoryChoices = (
+        ('تکنولوژی', 'تکنولوژی'),
+        ('زبان برنامه نویسی', 'زبان برنامه نویسی'),
+        ('هوش مصنوعی', 'هوش مصنوعی'),
+        ('بلاکچین', 'بلاکچین'),
+        ('سایر', 'سایر'),
+    )
+
     # relations
     author = models.ForeignKey(User, on_delete=models.CASCADE,
                                related_name='posts', verbose_name='نویسنده')
@@ -36,6 +44,8 @@ class Post(models.Model):
     status = models.CharField(max_length=2, choices=Status.choices,
                               default=Status.DRAFT, verbose_name='وضعیت')
     reading_time = models.PositiveIntegerField(verbose_name="زمان مطالعه")
+    category = models.CharField(choices=CategoryChoices, max_length=20,
+                                default='سایر')
     # manager
     # objects = models.Manager()
     objects = jmodels.jManager()
@@ -59,6 +69,12 @@ class Post(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        for img in self.images.all():
+            storege, path = img.image_file.storage, img.image_file.path
+            storege.delete(path)
+        super().delete(*args, **kwargs)
 
 
 class Ticket(models.Model):
@@ -105,8 +121,8 @@ def year_directory_path(image, filename):
 class Image(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE,
                              related_name='images', verbose_name='تصویر')
-    image_file = ResizedImageField(upload_to=year_directory_path,
-                                   size=[500, 500],
+    image_file = ResizedImageField(upload_to='post_images/',
+                                   size=[600, 400],
                                    quality=75, crop=['middle', 'center'])
     title = models.CharField(max_length=200, verbose_name='عنوان', null=True,
                              blank=True)
@@ -123,5 +139,32 @@ class Image(models.Model):
         verbose_name = 'تصویر'
         verbose_name_plural = 'تصاویر'
 
+    def delete(self, *args, **kwargs):
+        storage, path = self.image_file.storage, self.image_file.path
+        storage.delete(path)
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return self.title if self.title else self.image_file.name
+
+
+class Account(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, blank=True,
+                                null=True)
+    birth_of_date = jmodels.jDateField(auto_now_add=True,
+                                       verbose_name='تاریخ تولد', blank=True,
+                                       null=True)
+    bio = models.TextField(verbose_name='بایو', blank=True, null=True)
+    photo = ResizedImageField(verbose_name='تصویر', upload_to='account_images/',
+                              size=[600, 400],
+                              quality=75, crop=['middle', 'center'], blank=True,
+                              null=True)
+    job = models.CharField(max_length=50, verbose_name='شغل', blank=True,
+                           null=True)
+
+    def __str__(self):
+        return self.user.username
+
+    class Meta:
+        verbose_name = 'اکانت'
+        verbose_name_plural = 'اکانت ها'
